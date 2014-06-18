@@ -1,6 +1,6 @@
 import sys
 import json
-import urllib
+from urllib.request import urlopen
 import datetime
 
 import pytz
@@ -79,7 +79,7 @@ def prettify(match):
     return """
     {} {:<30} {} - {} {:>30}
     {}
-    \xE2\x9A\xBD  {}
+    \u26BD  {}
     """.format(
         color,
         home['country'],
@@ -110,8 +110,8 @@ def fetch(endpoint):
         "endpoint": endpoint
     }
 
-    data = urllib.urlopen(url)
-    matches = json.load(data)
+    data = urlopen(url).read().decode('utf-8')
+    matches = json.loads(data)
 
     for match in matches:
         if is_valid(match):
@@ -122,7 +122,7 @@ def main():
     colorama.init()
     endpoint = ''.join(sys.argv[1:])
     for match in fetch(endpoint):
-        print prettify(match)
+        print(prettify(match))
 
 
 if __name__ == "__main__":

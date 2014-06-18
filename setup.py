@@ -12,7 +12,7 @@ setup(
         ],
     },
     install_requires=[
-        'python-dateutil==1.5',
+        'python-dateutil>=1.5',
         'colorama==0.3.1',
         'pytz==2014.4',
         'humanize==0.5'
