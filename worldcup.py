@@ -110,7 +110,7 @@ def fetch(endpoint):
     """
     Fetches match results by given endpoint
     """
-    url = "http://worldcup.sfg.io/matches/%(endpoint)s" % {
+    url = "http://worldcup.sfg.io/matches/%(endpoint)s?by_date=ASC" % {
         "endpoint": endpoint
     }
 
