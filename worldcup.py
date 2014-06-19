@@ -227,9 +227,6 @@ def main():
         """.format("Country", "wins", "losses", "Goals For",
                    "Goals Against", "Out?")
 
-        #print ("      Country       |"
-               #"  wins:  |  losses  | Goals For | Goals Against | Out?")
-
         for match in fetch(endpoint):
             if (match.get('group_id') == group_id):
                 print group_list(match)
