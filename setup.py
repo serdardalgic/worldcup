@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='worldcup',
-    version='1.0.3',
+    version='1.0.4',
     author_email='fatiherikli@gmail.com',
     py_modules=['worldcup'],
     entry_points={

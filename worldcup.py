@@ -1,3 +1,4 @@
+import argparse
 import sys
 import json
 import datetime
@@ -19,6 +20,54 @@ FUTURE = "future"
 NOW = "now"
 PAST = "past"
 SCREEN_WIDTH = 68
+
+FIFA_CODE_DICT = {
+    "Brazil": "BRA",
+    "Croatia": "CRO",
+    "Mexico": "MEX",
+    "Cameroon": "CMR",
+    "Spain": "ESP",
+    "Netherlands": "NED",
+    "Chile": "CHI",
+    "Australia": "AUS",
+    "Colombia": "COL",
+    "Greece": "GRE",
+    "Ivory Coast": "CIV",
+    "Japan": "JPN",
+    "Uruguay": "URU",
+    "Costa-Rica": "CRC",
+    "England": "ENG",
+    "Italy": "ITA",
+    "Switzerland": "SUI",
+    "Ecuador": "ECU",
+    "France": "FRA",
+    "Honduras": "HON",
+    "Argentina": "ARG",
+    "Bosnia-Herzegovina": "BIH",
+    "Iran": "IRN",
+    "Nigeria": "NGA",
+    "Germany": "GER",
+    "Portugal": "POR",
+    "Ghana": "GHA",
+    "USA": "USA",
+    "Belgium": "BEL",
+    "Algeria": "ALG",
+    "Russia": "RUS",
+    "South Korea": "KOR",
+}
+GROUP_DICT = dict(zip(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], range(1, 9)))
+
+
+def country_code(cname):
+    try:
+        return cname if cname in FIFA_CODE_DICT.values() else FIFA_CODE_DICT[
+            cname]
+    except KeyError:
+        print ("You should either give the name or FIFA Country Code "
+               "of one of the following countries:")
+        for cnt, code in FIFA_CODE_DICT.items():
+            print """ {:<20} <--> {} """.format(cnt, code)
+        sys.exit(-2)
 
 
 def progress_bar(percentage, separator="o", character="-"):
@@ -105,8 +154,9 @@ def group_list(country):
     Lists a group member
     """
     return """
-    {:<5} \t\t| wins: {} | losses: {} | goals for: {} | goals against: {} | out? {}
+    {:<22} | {:5} |{:7} |{:10} |{:14} | {}
     {}
+    ---------------------------------------------------------------------------
     """.format(
         country['country'],
         country['wins'],
@@ -134,7 +184,7 @@ def fetch(endpoint):
     """
     Fetches match results by given endpoint
     """
-    url = "http://worldcup.sfg.io/matches/%(endpoint)s?by_date=ASC" % {
+    url = "http://worldcup.sfg.io/%(endpoint)s?by_date=ASC" % {
         "endpoint": endpoint
     }
 
@@ -146,28 +196,54 @@ def fetch(endpoint):
             yield match
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="World Cup results for hackers. Uses Soccer For Good API.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-c", "--country", help="Name or the FIFA code of "
+                       "the country.", default="", dest="country")
+    group.add_argument("-g", "--group", help="Name of the group to see "
+                       "the standings.",
+                       choices=GROUP_DICT.keys(),
+                       default="")
+    group.add_argument("-p", "--period",
+                       help="Time period that you want to know the match "
+                       "results.",
+                       choices=("today", "tomorrow", "current"),
+                       default="")
+    return parser.parse_args()
+
+
 def main():
     colorama.init()
+    args = parse_args()
 
-    endpoint = ''.join(sys.argv[1:])
+    if args.group:
+        endpoint = 'group_results'
+        group_id = GROUP_DICT[args.group]
+        print """    GROUP {:<20}""".format(args.group)
+        print " " * 3, "-" * 75
+        print """    {:<22} | {:5} | {:<5} | {:<5} | {:<5} | {:<5}
+        """.format("Country", "wins", "losses", "Goals For",
+                   "Goals Against", "Out?")
 
-    # todo: use argument parser
+        #print ("      Country       |"
+               #"  wins:  |  losses  | Goals For | Goals Against | Out?")
 
-    if len(sys.argv) > 1:
-        if (sys.argv[1].lower() == 'country'):
-            endpoint = 'matches/country?fifa_code=%(country)s' % {
-                "country": sys.argv[2]
+        for match in fetch(endpoint):
+            if (match.get('group_id') == group_id):
+                print group_list(match)
+    else:
+        endpoint = 'matches/'
+        if args.country:
+            endpoint += 'country?fifa_code=%(country)s' % {
+                "country": country_code(args.country)
             }
-        elif (sys.argv[1].lower() == 'group'):
-            endpoint = 'group_results'
-            group_id = int(sys.argv[2])
-            for match in fetch(endpoint):
-                if (match.get('group_id') == group_id):
-                    print group_list(match)
-            return
+        elif args.period:
+            endpoint += args.period
 
-    for match in fetch(endpoint):
-        print(prettify(match).encode('utf-8'))
+        for match in fetch(endpoint):
+            print(prettify(match).encode('utf-8'))
 
 if __name__ == "__main__":
     main()
