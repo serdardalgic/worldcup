@@ -132,7 +132,7 @@ def main():
     colorama.init()
     endpoint = ''.join(sys.argv[1:])
     for match in fetch(endpoint):
-        print(prettify(match))
+        print(prettify(match).encode('utf-8'))
 
 
 if __name__ == "__main__":
