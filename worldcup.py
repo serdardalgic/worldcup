@@ -100,6 +100,22 @@ def prettify(match):
         colorama.Fore.WHITE + match_status
     )
 
+def group_list(country):
+    """
+    Lists a group member
+    """
+    return """
+    {:<5} \t\t| wins: {} | losses: {} | goals for: {} | goals against: {} | out? {}
+    ----------------------------------------------------------------------------------------
+    """.format(
+        country['country'],
+        country['wins'],
+        country['losses'],
+        country['goals_for'],
+        country['goals_against'],
+        country['knocked_out']
+    )
+
 
 def is_valid(match):
     """
@@ -108,7 +124,8 @@ def is_valid(match):
     return (
         isinstance(match, dict) and
         isinstance(match.get('home_team'), dict) or
-        isinstance(match.get('away_team'), dict)
+        isinstance(match.get('away_team'), dict) or
+        isinstance(match.get('group_id'), int)
     )
 
 
@@ -130,10 +147,23 @@ def fetch(endpoint):
 
 def main():
     colorama.init()
+
     endpoint = ''.join(sys.argv[1:])
+
+    if (sys.argv[1].lower() == 'country'):
+        endpoint = 'matches/country?fifa_code=%(country)s' % {
+            "country": sys.argv[2]
+        }
+    elif (sys.argv[1].lower() == 'group'):
+        endpoint = 'group_results'
+        group_id = int(sys.argv[2])
+        for match in fetch(endpoint):
+            if (match.get('group_id') == group_id):
+                print group_list(match)
+        return
+
     for match in fetch(endpoint):
         print(prettify(match).encode('utf-8'))
-
 
 if __name__ == "__main__":
     main()
