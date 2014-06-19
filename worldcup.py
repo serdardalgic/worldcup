@@ -1,12 +1,18 @@
 import sys
 import json
-import urllib
 import datetime
 
 import colorama
 import humanize
 import dateutil.parser
 import dateutil.tz
+
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 
 FUTURE = "future"
@@ -80,10 +86,10 @@ def prettify(match):
     else:
         match_percentage = 100
 
-    return """
+    return u"""
     {} {:<30} {} - {} {:>30}
     {}
-    \xE2\x9A\xBD  {}
+    \u26BD  {}
     """.format(
         color,
         home['country'],
@@ -114,8 +120,8 @@ def fetch(endpoint):
         "endpoint": endpoint
     }
 
-    data = urllib.urlopen(url)
-    matches = json.load(data)
+    data = urlopen(url).read().decode('utf-8')
+    matches = json.loads(data)
 
     for match in matches:
         if is_valid(match):
@@ -126,7 +132,7 @@ def main():
     colorama.init()
     endpoint = ''.join(sys.argv[1:])
     for match in fetch(endpoint):
-        print prettify(match)
+        print(prettify(match))
 
 
 if __name__ == "__main__":
