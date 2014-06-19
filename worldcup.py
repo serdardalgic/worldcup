@@ -106,14 +106,15 @@ def group_list(country):
     """
     return """
     {:<5} \t\t| wins: {} | losses: {} | goals for: {} | goals against: {} | out? {}
-    ----------------------------------------------------------------------------------------
+    {}
     """.format(
         country['country'],
         country['wins'],
         country['losses'],
         country['goals_for'],
         country['goals_against'],
-        country['knocked_out']
+        country['knocked_out'],
+        "-" * SCREEN_WIDTH
     )
 
 
@@ -150,17 +151,20 @@ def main():
 
     endpoint = ''.join(sys.argv[1:])
 
-    if (sys.argv[1].lower() == 'country'):
-        endpoint = 'matches/country?fifa_code=%(country)s' % {
-            "country": sys.argv[2]
-        }
-    elif (sys.argv[1].lower() == 'group'):
-        endpoint = 'group_results'
-        group_id = int(sys.argv[2])
-        for match in fetch(endpoint):
-            if (match.get('group_id') == group_id):
-                print group_list(match)
-        return
+    # todo: use argument parser
+
+    if len(sys.argv) > 1:
+        if (sys.argv[1].lower() == 'country'):
+            endpoint = 'matches/country?fifa_code=%(country)s' % {
+                "country": sys.argv[2]
+            }
+        elif (sys.argv[1].lower() == 'group'):
+            endpoint = 'group_results'
+            group_id = int(sys.argv[2])
+            for match in fetch(endpoint):
+                if (match.get('group_id') == group_id):
+                    print group_list(match)
+            return
 
     for match in fetch(endpoint):
         print(prettify(match).encode('utf-8'))
