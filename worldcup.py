@@ -124,7 +124,7 @@ def prettify(match):
         else:
             result = "%s won" % (match['winner'])
         match_status = "Played %s. %s" % (humanize.naturaltime(diff),
-                                                  result)
+                                          result)
     else:
         match_status = "Will be played %s" % humanize.naturaltime(diff)
 
@@ -149,6 +149,7 @@ def prettify(match):
         colorama.Fore.WHITE + match_status
     )
 
+
 def group_list(country):
     """
     Lists a group member
@@ -156,7 +157,6 @@ def group_list(country):
     return """
     {:<22} | {:5} |{:7} |{:10} |{:14} | {}
     {}
-    ---------------------------------------------------------------------------
     """.format(
         country['country'],
         country['wins'],
@@ -164,7 +164,7 @@ def group_list(country):
         country['goals_for'],
         country['goals_against'],
         country['knocked_out'],
-        "-" * SCREEN_WIDTH
+        "-" * (SCREEN_WIDTH + 7)
     )
 
 
@@ -184,7 +184,7 @@ def fetch(endpoint):
     """
     Fetches match results by given endpoint
     """
-    url = "http://worldcup.sfg.io/%(endpoint)s?by_date=ASC" % {
+    url = "http://worldcup.sfg.io/%(endpoint)s" % {
         "endpoint": endpoint
     }
 
@@ -226,6 +226,7 @@ def main():
         print """    {:<22} | {:5} | {:<5} | {:<5} | {:<5} | {:<5}
         """.format("Country", "wins", "losses", "Goals For",
                    "Goals Against", "Out?")
+        print " " * 3, "-" * 75
 
         for match in fetch(endpoint):
             if (match.get('group_id') == group_id):
@@ -233,11 +234,11 @@ def main():
     else:
         endpoint = 'matches/'
         if args.country:
-            endpoint += 'country?fifa_code=%(country)s' % {
+            endpoint += 'country?fifa_code=%(country)s&by_date=ASC' % {
                 "country": country_code(args.country)
             }
         elif args.period:
-            endpoint += args.period
+            endpoint = "".join([endpoint, args.period, "/?by_date=ASC"])
 
         for match in fetch(endpoint):
             print(prettify(match).encode('utf-8'))
